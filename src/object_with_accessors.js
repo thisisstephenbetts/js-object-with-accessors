@@ -29,18 +29,23 @@ Class.createSubclass('ObjectWithAccessors',{
 	setup_accessors: function() {
 		var accessors = this._accessors;
 		var that=this;
-		$.each(accessors,function(i,acc_method) {
-			var int_var = '_'+acc_method;
-			var acc_prototype = window[that.constructor.name].prototype[acc_method];
-			if (!acc_prototype) {
-				window[that.constructor.name].prototype[acc_method] = function() {
-					if (arguments.length > 0) {
-						this[int_var]=arguments[0];
+		for (var i=0; i<accessors.length; i++) {
+			(function () {
+				var  acc_method = accessors[i];
+				var internal_var = '_'+accessors[i];
+
+				if (!window[that.constructor.name].prototype[acc_method]) {
+
+					window[that.constructor.name].prototype[acc_method] = function() {
+						// console.log(int_var);
+						if (arguments.length > 0) {
+							this[internal_var]=arguments[0];
+						}
+						return this[internal_var];
 					}
-					return this[int_var];
 				}
-			}
-		});		
+			})();
+		}
 	},
 	'_accessors': [],
 	default_params: function() { return {}; },
@@ -62,12 +67,12 @@ Class.createSubclass('ObjectWithAccessors',{
 		this.add_defaults_to_params(params || {});
 
 		var that = this;
-		$.each(params || [],function(k,v) {
-			if (that[k] !== undefined) { that[k](v); }
-		});	
+		for (var k in params || {}) {
+			if (that[k] !== undefined) { that[k](params[k]); }			
+		}
 	}
 	
-})
+});
 
 // // Example Usage
 // ObjectWithAccessors.createSubclass('SubClass',{
@@ -136,3 +141,4 @@ Class.createSubclass('ObjectWithAccessors',{
 // console.log("a instanceof SubSubClass: "+(a instanceof SubSubClass))
 // console.log("b instanceof SubClass: "+   (b instanceof SubClass))
 // console.log("b instanceof SubSubClass: "+(b instanceof SubSubClass))
+
