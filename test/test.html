@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<link rel="stylesheet" href="qunit-1.13.0.css">
+	<script src='qunit-1.13.0.js'></script>
 	<script src='../src/class.js'></script>
 	<script src='../src/object_with_accessors.js'></script>
 	<!-- <script src='http://influxenterprises.pathinonnu.local/j/lib/object_with_accessors.js'></script>
@@ -31,50 +33,76 @@
 		}
 		
 		var a = new SubClass;
-		var a2 = new SubClass({first: 'A', second: 'B', third: 'C'});
-		var b = new SubSubClass;
-		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});;
-		
 		a.first('a 1st');
 		a.second('a 2nd');
-		
-		console.log('a.first(): '+ a.first())
-		console.log('a.second(): '+ a.second())
-		console.log('a.third(): '+ a.third())
-		console.log('a.another(): '+ a.another())
-		console.log('a2.first(): '+a2.first())
-		console.log('a2.second(): '+a2.second())
-		console.log('a2.third(): '+a2.third())
-		console.log('a2.another(): '+ a2.another())
-		
+
+		var a2 = new SubClass({first: 'A', second: 'B', third: 'C'});
+
+		var b = new SubSubClass;
 		b.first('b 1st');
 		b.second('b 2nd');
 		b.third('b 3rd');
 		b.fourth('b 4th');
 		b.extra_method('b extra');
 		
-		console.log('b.first(): '+b.first())
-		console.log('b.second(): '+b.second())
-		console.log('b.third(): '+b.third())
-		console.log('b.fourth(): '+b.fourth())
-		console.log('b.extra_method(): '+b.extra_method())
-		console.log('b.another(): '+ b.another())
+		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});;
 		
 		
-		console.log('b2.first(): '+b2.first())
-		console.log('b2.second(): '+b2.second())
-		console.log('b2.third(): '+b2.third())
-		console.log('b2.fourth(): '+b2.fourth())
-		console.log('b2.extra_method(): '+b2.extra_method())
-		console.log('b2.another(): '+ b2.another())
+		test('a, instance of SubClass',function() {
+			equal(a.first(),'a 1st');
+			equal(a.second(),'a 2nd');
+			equal(a.third(),undefined);
+			throws(function() { a.fourth() },"TypeError: Object #<SubClass> has no method 'fourth'");
+			equal(a.another(),'another method in class SubClass');
+		})
 		
-		console.log("a instanceof SubClass: "+(a instanceof SubClass))
-		console.log("a instanceof SubSubClass: "+(a instanceof SubSubClass))
-		console.log("b instanceof SubClass: "+   (b instanceof SubClass))
-		console.log("b instanceof SubSubClass: "+(b instanceof SubSubClass))
+		test('a2, another instance of SubClass',function() {
+			equal(a2.first(),'A');
+			equal(a2.second(),'B');
+			equal(a2.third(),'C');
+			throws(function() { a2.fourth() },"TypeError: Object #<SubClass> has no method 'fourth'");
+			equal(a2.another(),'another method in class SubClass');
+		});
+		
+		test('b, instance of SubSubClass',function() {
+			equal(b.first(),'b 1st');
+			equal(b.second(),'Overridden "second" method');
+			equal(b.third(),'b 3rd');
+			equal(b.fourth(),'b 4th');
+			equal(b.another(),'another method in class SubSubClass');
+			equal(b.extra_method(),'New method SubSubClass#extra_method');
+		});
+
+		test('b2, another instance of SubSubClass',function() {
+			equal(b2.first(),'b2 first');
+			equal(b2.second(),'Overridden "second" method');
+			equal(b2.third(),'b2 third');
+			equal(b2.fourth(),'b2 fourth');
+			equal(b2.another(),'another method in class SubSubClass');
+			equal(b2.extra_method(),'New method SubSubClass#extra_method');
+		});
+		
+		test("a instanceof SubClass",function() {
+			ok(a instanceof SubClass);
+		});
+
+
+		test("a not instanceof SubSubClass",function() {
+			ok(!(a instanceof SubSubClass));
+		});
+
+		test("b instanceof SubClass",function() {
+			ok(b instanceof SubClass);
+		});
+
+
+		test("b instanceof SubSubClass",function() {
+			ok(b instanceof SubSubClass);
+		});
 		
 	</script>
 </head>
 <body>
+	<div id="qunit"></div>
 </body>	
 </html>
