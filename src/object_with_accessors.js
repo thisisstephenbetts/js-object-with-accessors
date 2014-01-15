@@ -30,16 +30,14 @@ Class.createSubclass('ObjectWithAccessors',{
 		var accessors = this._accessors;
 		var that=this;
 		for (var i=0; i<accessors.length; i++) {
-			(function () {
-				var  acc_method = accessors[i];
+			var  acc_method = accessors[i];
 
-				if (!window[that.constructor.name].prototype[acc_method]) {
+			if (!window[that.constructor.name].prototype[acc_method]) {
 
-					window[that.constructor.name].prototype[acc_method] = 
-							Class.create_accessor('_'+accessors[i]);
-					
-				}
-			})();
+				window[that.constructor.name].prototype[acc_method] = 
+						Class.create_accessor('_'+accessors[i]);
+				
+			}
 		}
 	},
 	'_accessors': [],
