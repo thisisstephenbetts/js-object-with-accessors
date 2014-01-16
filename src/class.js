@@ -10,7 +10,6 @@
   
   // Create a new Class that inherits from this class
   Class.createSubclass = function(classname,prop) {
-
     var _super = this.prototype;
 
     // Instantiate a base class (but only create the instance,
@@ -43,7 +42,7 @@
         })(name, prop[name]) :
         prop[name];
     }
-    prototype._parent_class = this;
+    // prototype._parent_class = this;
 		eval(
 			"function "+classname+"() { "+
 				// All construction is actually done in the init method

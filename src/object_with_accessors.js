@@ -3,71 +3,141 @@
 
 // Also using http://ejohn.org/blog/simple-javascript-inheritance/ 
 
-// // Just to keep things slightly neater.
-// ObjectWithAccessors.addAccessors = function(o,acc) {
-// 	if (!o['_accessors']) { o['_accessors']=[] }
-// 	o['_accessors'] = o['_accessors'].concat(acc);
-// }
+/* Simple JavaScript Inheritance
+ * By John Resig http://ejohn.org/
+ * MIT Licensed.
+ */
+// Inspired by base2 and Prototype
+(function(){
+  var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+  // The base Class implementation (does nothing)
+  this.ObjectWithAccessors = function ObjectWithAccessors(){};
+  
+  // Create a new Class that inherits from this class
+  ObjectWithAccessors.createSubclass = function(classname,class_props) {
+    var _super = this.prototype;
 
-// // Could make parent optional (defaulting to ObjectWithAccessors), but you
-// //  need to mess around the other declarations so much anyway, may as well
-// //  just leave it in.
-// ObjectWithAccessors.createClassWithAccsFromParent = function(o,acc,parent_constructor) {
-// 	ObjectWithAccessors.addAccessors(o,acc);
-// 	// TODO - perhaps use apply, so you can have multiple parameters
-// 	parent_constructor.call(o,arguments[3]);
-// }
+    // Instantiate a base class (but only create the instance,
+    // don't run the init constructor)
+    initializing = true;
+    var prototype = new this();
+    initializing = false;
 
-// Slightly worried about using global window object, but no matter.
+		var instance_methods = class_props.instance_methods;
 
-Class.createSubclass('ObjectWithAccessors',{
-	init: function(params) {
-		this.setup_accessors();
-		if (params === false) {return false}
-		this.init_vars(params);
-	},
-	setup_accessors: function() {
-		var accessors = this._accessors;
-		var that=this;
+		var accessors = class_props.accessors;
 		for (var i=0; i<accessors.length; i++) {
 			var  acc_method = accessors[i];
-
-			if (!window[that.constructor.name].prototype[acc_method]) {
-
-				window[that.constructor.name].prototype[acc_method] = 
-						Class.create_accessor('_'+accessors[i]);
-				
-			}
+			instance_methods[acc_method] = 
+					ObjectWithAccessors.create_accessor('_'+accessors[i]);
 		}
-	},
-	'_accessors': [],
-	default_params: function() { return {}; },
+		
+    // Copy the properties over onto the new prototype
+    for (var name in instance_methods || {}) {
+      // Check if we're overwriting an existing function
+      prototype[name] = 
+					typeof instance_methods[name] == "function" && 
+	        typeof _super[name] == "function" && 
+					fnTest.test(instance_methods[name]) ?
+        (function(name, fn){
+          return function() {
+            var tmp = this._super;
+            
+            // Add a new ._super() method that is the same method
+            // but on the super-class
+            this._super = _super[name];
+            
+            // The method only need to be bound temporarily, so we
+            // remove it when we're done executing
+            var ret = fn.apply(this, arguments);        
+            this._super = tmp;
+            
+            return ret;
+          };
+        })(name, instance_methods[name]) :
+        instance_methods[name];
+    }
+		// console.log('here',this)
+		eval(
+			"function "+classname+"() { "+
+				// All construction is actually done in the init method
+		    "if ( !initializing && this.init ) {"+
+		    "    this.init.apply(this, arguments);"+
+		    "}"+
+			"};"+
+			"window."+classname+" = "+classname+";"+
+	    // Populate our constructed prototype object
+	    classname+".prototype = prototype;"+
+	    // Enforce the constructor to be what we expect
+			classname+".prototype.constructor = "+classname+";"
+		);
+		
+		for (var inherited_class_method in this) {
+			window[classname][inherited_class_method] = this[inherited_class_method];
+		}
 
-	// Doesn't feel like an instance method
-	add_defaults_to_params: function(params) {
+    // And make this class subclassable
+		window[classname].createSubclass = ObjectWithAccessors.createSubclass;
+		window[classname]._parent_class = this;
+		
+		var class_methods = class_props.class_methods;
+		for (var name in class_methods) {
+			window[classname][name] = 
+				typeof class_methods[name] == "function" && 
+				fnTest.test(class_methods[name]) ?
+      (function(name, fn){
+        return function() {
+          var tmp = this._super;
+          
+          // Add a new ._super() method that is the same method
+          // but on the super-class
+          this._super = _super[name];
+          
+          // The method only need to be bound temporarily, so we
+          // remove it when we're done executing
+          var ret = fn.apply(this, arguments);        
+          this._super = tmp;
+          
+          return ret;
+        };
+      })(name, class_methods[name]) :
+      class_methods[name];
+		}
+				
+  }
+
+	ObjectWithAccessors.prototype.init = function(params) {
+		if (params === false) {return false}
+		this.init_vars(params);
+	};
+	
+	ObjectWithAccessors.prototype.add_defaults_to_params = function(params) {
 		// var params = (args || {});
 		// console.log(arguments.callee.name)
-		var defaults = this.default_params();
-
+		var defaults = this.constructor.default_params() || {};
 		for (var v in defaults) {
 			if (params[v] === undefined && defaults[v] !== undefined) { 
 				params[v] = defaults[v];
 			}
 		}
-	},
+	};
 	
-	init_vars: function(params) {
-		this.add_defaults_to_params(params || {});
-
+	ObjectWithAccessors.prototype.init_vars = function(params) {
+		params = params || {};
+		this.add_defaults_to_params(params);
+		
 		var that = this;
 		for (var k in params || {}) {
 			if (that[k] !== undefined) { that[k](params[k]); }			
 		}
-	}
-	
-});
+	};
+})();
 
-Class.create_accessor = function(var_name) {
+ObjectWithAccessors.default_params = function() {
+	return {};
+}
+
+ObjectWithAccessors.create_accessor = function(var_name) {
 	return function () {
 		if (arguments.length > 0) {
 			this[var_name]=arguments[0];
@@ -75,6 +145,7 @@ Class.create_accessor = function(var_name) {
 		return this[var_name];		
 	}
 }
+
 
 // // Example Usage
 // ObjectWithAccessors.createSubclass('SubClass',{

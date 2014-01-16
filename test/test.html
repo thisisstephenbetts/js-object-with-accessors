@@ -9,19 +9,33 @@
 		<script src='http://influxenterprises.pathinonnu.local/j/vdr/jquery-1.7.1.min.js'></script> -->
 	<script>
 		ObjectWithAccessors.createSubclass('SubClass',{
-			init: function(args) { this._super(args) },
-			'_accessors': ['first','second','third']
+			accessors: ['first','second','third'],
+			instance_methods: {
+				init: function(args) { this._super(args) }				
+			}
 		});
-		// Overriding defined method
+		// Adding another method
 		SubClass.prototype.another = function() {
 			return 'another method in class '+this.constructor.name
 		}
 		
 		SubClass.createSubclass('SubSubClass',{
-			init: function(args) { this._super(args) },
-			'_accessors': ['fourth']
+			accessors: ['fourth'],
+			instance_methods: {
+				init: function(args) { this._super(args) }
+			}			
 		});
 		  	
+		ObjectWithAccessors.createSubclass('ClassWithDefaults',{
+			accessors: ['meth1','meth2'],
+			instance_methods: {
+			},
+			class_methods: {
+				default_params: function() { return {meth2: 'B'} }			
+			}
+		});
+		
+		
 		// Overriding defined method
 		SubSubClass.prototype.second = function() {
 			return 'Overridden "second" method'
@@ -45,8 +59,9 @@
 		b.fourth('b 4th');
 		b.extra_method('b extra');
 		
-		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});;
+		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});
 		
+		var c = new ClassWithDefaults();
 		
 		test('a, instance of SubClass',function() {
 			equal(a.first(),'a 1st');
@@ -81,9 +96,16 @@
 			equal(b2.another(),'another method in class SubSubClass');
 			equal(b2.extra_method(),'New method SubSubClass#extra_method');
 		});
+
+		test('c, instance of ClassWithDefaults',function() {
+			equal(c.meth1(),undefined);
+			equal(c.meth2(),'B');
+		});
+
 		
 		test("a instanceof SubClass",function() {
 			ok(a instanceof SubClass);
+			equal(a.constructor._parent_class.name,ObjectWithAccessors.name);
 		});
 
 
@@ -98,6 +120,7 @@
 
 		test("b instanceof SubSubClass",function() {
 			ok(b instanceof SubSubClass);
+			equal(b.constructor._parent_class.name,SubClass.name);
 		});
 		
 	</script>
