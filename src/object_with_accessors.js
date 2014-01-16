@@ -27,7 +27,7 @@
 
 		var instance_methods = class_props.instance_methods || {};
 
-		var accessors = class_props.accessors;
+		var accessors = class_props.accessors || [];
 		for (var i=0; i<accessors.length; i++) {
 			var  acc_method = accessors[i];
 			instance_methods[acc_method] = 
@@ -82,7 +82,7 @@
 
 		// console.log(eval("classname"),window[classname])
 		for (var inherited_class_method in parent) {
-			if (typeof window[classname][inherited_class_method] === "function") {
+			if (typeof parent[inherited_class_method] === "function") {
 				window[classname][inherited_class_method] = parent[inherited_class_method];
 			}
 		}

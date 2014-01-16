@@ -25,22 +25,7 @@
 				init: function(args) { this._super(args) }
 			}			
 		});
-		  	
-		ObjectWithAccessors.createSubclass('ClassWithDefaults',{
-			accessors: ['meth1','meth2'],
-			default_params: {meth2: 'meth2 default'}
-		});
 
-		ClassWithDefaults.createSubclass('ClassWithDefaultsSubClass',{
-			accessors: ['meth3','meth4'],
-			default_params: {meth4: 'meth4 default'},
-			instance_methods: {
-			},
-			class_methods: {
-			}
-		});
-		
-		
 		// Overriding defined method
 		SubSubClass.prototype.second = function() {
 			return 'Overridden "second" method'
@@ -57,23 +42,6 @@
 
 		var a2 = new SubClass({first: 'A', second: 'B', third: 'C'});
 
-		var b = new SubSubClass;
-		b.first('b 1st');
-		b.second('b 2nd');
-		b.third('b 3rd');
-		b.fourth('b 4th');
-		b.extra_method('b extra');
-		
-		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});
-		
-		var c = new ClassWithDefaults();
-		var c2 = new ClassWithDefaults({meth1:'c2 meth1',meth2:'c2 meth2'});
-
-		var d = new ClassWithDefaultsSubClass();
-		var d2 = new ClassWithDefaultsSubClass({
-			meth1:'d2 meth1',meth2:'d2 meth2',meth3:'d2 meth3',meth4:'d2 meth4'
-		});
-		
 		test('a, instance of SubClass',function() {
 			equal(a.first(),'a 1st');
 			equal(a.second(),'a 2nd');
@@ -89,6 +57,17 @@
 			throws(function() { a2.fourth() },"TypeError: Object #<SubClass> has no method 'fourth'");
 			equal(a2.another(),'another method in class SubClass');
 		});
+
+
+
+		var b = new SubSubClass;
+		b.first('b 1st');
+		b.second('b 2nd');
+		b.third('b 3rd');
+		b.fourth('b 4th');
+		b.extra_method('b extra');
+		
+		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});
 		
 		test('b, instance of SubSubClass',function() {
 			equal(b.first(),'b 1st');
@@ -108,6 +87,49 @@
 			equal(b2.extra_method(),'New method SubSubClass#extra_method');
 		});
 
+		test("a instanceof SubClass",function() {
+			ok(a instanceof SubClass);
+			equal(a.constructor._parent_class.name,ObjectWithAccessors.name);
+		});
+
+
+		test("a not instanceof SubSubClass",function() {
+			ok(!(a instanceof SubSubClass));
+		});
+
+		test("b instanceof SubClass",function() {
+			ok(b instanceof SubClass);
+		});
+
+
+		test("b instanceof SubSubClass",function() {
+			ok(b instanceof SubSubClass);
+			equal(b.constructor._parent_class.name,SubClass.name);
+		});
+
+
+		ObjectWithAccessors.createSubclass('ClassWithDefaults',{
+			accessors: ['meth1','meth2'],
+			default_params: {meth2: 'meth2 default'}
+		});
+
+		ClassWithDefaults.createSubclass('ClassWithDefaultsSubClass',{
+			accessors: ['meth3','meth4'],
+			default_params: {meth4: 'meth4 default'},
+			instance_methods: {
+			},
+			class_methods: {
+			}
+		});
+
+		var c = new ClassWithDefaults();
+		var c2 = new ClassWithDefaults({meth1:'c2 meth1',meth2:'c2 meth2'});
+
+		var d = new ClassWithDefaultsSubClass();
+		var d2 = new ClassWithDefaultsSubClass({
+			meth1:'d2 meth1',meth2:'d2 meth2',meth3:'d2 meth3',meth4:'d2 meth4'
+		});
+		
 		test('c, instance of ClassWithDefaults',function() {
 			equal(c.meth1(),undefined);
 			equal(c.meth2(),'meth2 default');
@@ -132,26 +154,28 @@
 			equal(d2.meth4(),'d2 meth4');
 		});
 		
-		test("a instanceof SubClass",function() {
-			ok(a instanceof SubClass);
-			equal(a.constructor._parent_class.name,ObjectWithAccessors.name);
+		ObjectWithAccessors.createSubclass('ClassWithClassMethod',{
+			class_methods: {
+				cmethod: function() { return "ClassWithClassMethod#cmethod" }
+			}
 		});
 
+		ClassWithClassMethod.createSubclass('SubClassWithClassMethod',{});
 
-		test("a not instanceof SubSubClass",function() {
-			ok(!(a instanceof SubSubClass));
-		});
-
-		test("b instanceof SubClass",function() {
-			ok(b instanceof SubClass);
-		});
-
-
-		test("b instanceof SubSubClass",function() {
-			ok(b instanceof SubSubClass);
-			equal(b.constructor._parent_class.name,SubClass.name);
-		});
+		var e = new ClassWithClassMethod();
+		var f = new SubClassWithClassMethod();
 		
+		test('Testing ClassWithClassMethod',function() {
+			equal(ClassWithClassMethod.cmethod(),'ClassWithClassMethod#cmethod');
+			equal(e.constructor.cmethod(),'ClassWithClassMethod#cmethod');
+		});
+
+		test('Testing SubClassWithClassMethod (inheritance from ClassWithClassMethod)',function() {
+			equal(SubClassWithClassMethod.cmethod(),'ClassWithClassMethod#cmethod');
+			equal(f.constructor.cmethod(),'ClassWithClassMethod#cmethod');
+		});
+
+
 	</script>
 </head>
 <body>
