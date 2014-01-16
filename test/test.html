@@ -28,10 +28,15 @@
 		  	
 		ObjectWithAccessors.createSubclass('ClassWithDefaults',{
 			accessors: ['meth1','meth2'],
+			default_params: {meth2: 'meth2 default'}
+		});
+
+		ClassWithDefaults.createSubclass('ClassWithDefaultsSubClass',{
+			accessors: ['meth3','meth4'],
+			default_params: {meth4: 'meth4 default'},
 			instance_methods: {
 			},
 			class_methods: {
-				default_params: function() { return {meth2: 'B'} }			
 			}
 		});
 		
@@ -62,6 +67,12 @@
 		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});
 		
 		var c = new ClassWithDefaults();
+		var c2 = new ClassWithDefaults({meth1:'c2 meth1',meth2:'c2 meth2'});
+
+		var d = new ClassWithDefaultsSubClass();
+		var d2 = new ClassWithDefaultsSubClass({
+			meth1:'d2 meth1',meth2:'d2 meth2',meth3:'d2 meth3',meth4:'d2 meth4'
+		});
 		
 		test('a, instance of SubClass',function() {
 			equal(a.first(),'a 1st');
@@ -99,9 +110,27 @@
 
 		test('c, instance of ClassWithDefaults',function() {
 			equal(c.meth1(),undefined);
-			equal(c.meth2(),'B');
+			equal(c.meth2(),'meth2 default');
 		});
 
+		test('c2, another instance of ClassWithDefaults, created with params',function() {
+			equal(c2.meth1(),'c2 meth1');
+			equal(c2.meth2(),'c2 meth2');
+		});
+		
+		test('d, instance of ClassWithDefaultsSubClass',function() {
+			equal(d.meth1(),undefined);
+			equal(d.meth2(),'meth2 default');
+			equal(d.meth3(),undefined);
+			equal(d.meth4(),'meth4 default');
+		});
+
+		test('d2, another instance of ClassWithDefaultsSubClass, created with params',function() {
+			equal(d2.meth1(),'d2 meth1');
+			equal(d2.meth2(),'d2 meth2');
+			equal(d2.meth3(),'d2 meth3');
+			equal(d2.meth4(),'d2 meth4');
+		});
 		
 		test("a instanceof SubClass",function() {
 			ok(a instanceof SubClass);

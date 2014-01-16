@@ -15,15 +15,17 @@
   
   // Create a new Class that inherits from this class
   ObjectWithAccessors.createSubclass = function(classname,class_props) {
-    var _super = this.prototype;
+		var parent = this;
+
+    var _super = parent.prototype;
 
     // Instantiate a base class (but only create the instance,
     // don't run the init constructor)
     initializing = true;
-    var prototype = new this();
+    var prototype = new parent();
     initializing = false;
 
-		var instance_methods = class_props.instance_methods;
+		var instance_methods = class_props.instance_methods || {};
 
 		var accessors = class_props.accessors;
 		for (var i=0; i<accessors.length; i++) {
@@ -57,7 +59,7 @@
         })(name, instance_methods[name]) :
         instance_methods[name];
     }
-		// console.log('here',this)
+
 		eval(
 			"function "+classname+"() { "+
 				// All construction is actually done in the init method
@@ -71,14 +73,23 @@
 	    // Enforce the constructor to be what we expect
 			classname+".prototype.constructor = "+classname+";"
 		);
-		
-		for (var inherited_class_method in this) {
-			window[classname][inherited_class_method] = this[inherited_class_method];
+
+		var defaults = parent.default_params || {};
+		for (var param in class_props.default_params) {
+			defaults[param] = class_props.default_params[param];
+		}
+		window[classname].default_params = defaults;
+
+		// console.log(eval("classname"),window[classname])
+		for (var inherited_class_method in parent) {
+			if (typeof window[classname][inherited_class_method] === "function") {
+				window[classname][inherited_class_method] = parent[inherited_class_method];
+			}
 		}
 
     // And make this class subclassable
 		window[classname].createSubclass = ObjectWithAccessors.createSubclass;
-		window[classname]._parent_class = this;
+		window[classname]._parent_class = parent;
 		
 		var class_methods = class_props.class_methods;
 		for (var name in class_methods) {
@@ -112,9 +123,8 @@
 	};
 	
 	ObjectWithAccessors.prototype.add_defaults_to_params = function(params) {
-		// var params = (args || {});
-		// console.log(arguments.callee.name)
-		var defaults = this.constructor.default_params() || {};
+
+		var defaults = this.constructor.default_params;
 		for (var v in defaults) {
 			if (params[v] === undefined && defaults[v] !== undefined) { 
 				params[v] = defaults[v];
@@ -133,9 +143,7 @@
 	};
 })();
 
-ObjectWithAccessors.default_params = function() {
-	return {};
-}
+ObjectWithAccessors.default_params = {};
 
 ObjectWithAccessors.create_accessor = function(var_name) {
 	return function () {
