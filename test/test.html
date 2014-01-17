@@ -20,15 +20,17 @@
 		}
 		
 		SubClass.createSubclass('SubSubClass',{
-			accessors: ['fourth'],
+			accessors: ['fourth','fifth'],
 			instance_methods: {
-				init: function(args) { this._super(args) }
-			}			
+				init: function(args) { this._super(args) },
+				second: function() { return 'Overridden (inherited) "second" method' },
+				fifth: function() { return 'Overridden (new) "fifth" method' }
+			},
 		});
 
 		// Overriding defined method
-		SubSubClass.prototype.second = function() {
-			return 'Overridden "second" method'
+		SubSubClass.prototype.third = function() {
+			return 'Externally overridden "third" method';
 		}
 		
 		//Defining new method
@@ -65,24 +67,27 @@
 		b.second('b 2nd');
 		b.third('b 3rd');
 		b.fourth('b 4th');
+		b.fifth('b 5th');
 		b.extra_method('b extra');
 		
-		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth'});
+		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth', fifth: 'b 5th'});
 		
 		test('b, instance of SubSubClass',function() {
 			equal(b.first(),'b 1st');
-			equal(b.second(),'Overridden "second" method');
-			equal(b.third(),'b 3rd');
+			equal(b.second(),'Overridden (inherited) "second" method');
+			equal(b.third(),'Externally overridden "third" method');
 			equal(b.fourth(),'b 4th');
+			equal(b.fifth(),'Overridden (new) "fifth" method');
 			equal(b.another(),'another method in class SubSubClass');
 			equal(b.extra_method(),'New method SubSubClass#extra_method');
 		});
 
 		test('b2, another instance of SubSubClass',function() {
 			equal(b2.first(),'b2 first');
-			equal(b2.second(),'Overridden "second" method');
-			equal(b2.third(),'b2 third');
+			equal(b2.second(),'Overridden (inherited) "second" method');
+			equal(b2.third(),'Externally overridden "third" method');
 			equal(b2.fourth(),'b2 fourth');
+			equal(b2.fifth(),'Overridden (new) "fifth" method');
 			equal(b2.another(),'another method in class SubSubClass');
 			equal(b2.extra_method(),'New method SubSubClass#extra_method');
 		});

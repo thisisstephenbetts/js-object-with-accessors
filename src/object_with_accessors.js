@@ -79,8 +79,10 @@
 		var accessors = class_props.accessors || [];
 		for (var i=0; i<accessors.length; i++) {
 			var  acc_method = accessors[i];
+
+			if (instance_methods[acc_method]) { break; }
 			instance_methods[acc_method] = 
-					this.create_accessor('_'+accessors[i]);
+					this.create_accessor('_'+acc_method);
 		}
 		
     // Copy the properties over onto the new prototype
