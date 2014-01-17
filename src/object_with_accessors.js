@@ -67,12 +67,14 @@
 		    "    this.init.apply(this, arguments);"+
 		    "}"+
 			"};"+
-			"window."+classname+" = "+classname+";"+
-	    // Populate our constructed prototype object
-	    classname+".prototype = prototype;"+
-	    // Enforce the constructor to be what we expect
-			classname+".prototype.constructor = "+classname+";"
+			"window."+classname+" = "+classname+";"
 		);
+		
+    // Enforce the constructor to be what we expect
+		prototype.constructor = window[classname];
+    // Populate our constructed prototype object
+		window[classname].prototype = prototype;
+		
 
 		var defaults = parent.default_params || {};
 		for (var param in class_props.default_params) {
