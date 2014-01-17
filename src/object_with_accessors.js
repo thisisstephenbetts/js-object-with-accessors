@@ -74,15 +74,13 @@
 		}
 		window[classname].default_params = defaults;
 
-		
-
 		var instance_methods = class_props.instance_methods || {};
 
 		var accessors = class_props.accessors || [];
 		for (var i=0; i<accessors.length; i++) {
 			var  acc_method = accessors[i];
 			instance_methods[acc_method] = 
-					ObjectWithAccessors.create_accessor('_'+accessors[i]);
+					this.create_accessor('_'+accessors[i]);
 		}
 		
     // Copy the properties over onto the new prototype
