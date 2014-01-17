@@ -25,6 +25,57 @@
     var prototype = new parent();
     initializing = false;
 
+		eval(
+			"function "+classname+"() { "+
+				// All construction is actually done in the init method
+		    "if ( !initializing && this.init ) {"+
+		    "    this.init.apply(this, arguments);"+
+		    "}"+
+			"};"+
+			"window."+classname+" = "+classname+";"
+		);
+		
+		// console.log(eval("classname"),window[classname])
+		for (var inherited_class_method in parent) {
+			if (typeof parent[inherited_class_method] === "function") {
+				window[classname][inherited_class_method] = parent[inherited_class_method];
+			}
+		}
+
+		var class_methods = class_props.class_methods || {};
+		for (var name in class_methods) {
+			window[classname][name] = 
+				typeof class_methods[name] == "function" && 
+				fnTest.test(class_methods[name]) ?
+      (function(name, fn){
+        return function() {
+          var tmp = this._super;
+          
+          // Add a new ._super() method that is the same method
+          // but on the super-class
+          this._super = _super[name];
+          
+          // The method only need to be bound temporarily, so we
+          // remove it when we're done executing
+          var ret = fn.apply(this, arguments);        
+          this._super = tmp;
+          
+          return ret;
+        };
+      })(name, class_methods[name]) :
+      class_methods[name];
+		}
+		
+		window[classname]._parent_class = parent;
+
+		var defaults = parent.default_params || {};
+		for (var param in class_props.default_params) {
+			defaults[param] = class_props.default_params[param];
+		}
+		window[classname].default_params = defaults;
+
+		
+
 		var instance_methods = class_props.instance_methods || {};
 
 		var accessors = class_props.accessors || [];
@@ -60,62 +111,11 @@
         instance_methods[name];
     }
 
-		eval(
-			"function "+classname+"() { "+
-				// All construction is actually done in the init method
-		    "if ( !initializing && this.init ) {"+
-		    "    this.init.apply(this, arguments);"+
-		    "}"+
-			"};"+
-			"window."+classname+" = "+classname+";"
-		);
-		
     // Enforce the constructor to be what we expect
 		prototype.constructor = window[classname];
     // Populate our constructed prototype object
 		window[classname].prototype = prototype;
-		
 
-		var defaults = parent.default_params || {};
-		for (var param in class_props.default_params) {
-			defaults[param] = class_props.default_params[param];
-		}
-		window[classname].default_params = defaults;
-
-		// console.log(eval("classname"),window[classname])
-		for (var inherited_class_method in parent) {
-			if (typeof parent[inherited_class_method] === "function") {
-				window[classname][inherited_class_method] = parent[inherited_class_method];
-			}
-		}
-
-    // And make this class subclassable
-		window[classname].createSubclass = ObjectWithAccessors.createSubclass;
-		window[classname]._parent_class = parent;
-		
-		var class_methods = class_props.class_methods;
-		for (var name in class_methods) {
-			window[classname][name] = 
-				typeof class_methods[name] == "function" && 
-				fnTest.test(class_methods[name]) ?
-      (function(name, fn){
-        return function() {
-          var tmp = this._super;
-          
-          // Add a new ._super() method that is the same method
-          // but on the super-class
-          this._super = _super[name];
-          
-          // The method only need to be bound temporarily, so we
-          // remove it when we're done executing
-          var ret = fn.apply(this, arguments);        
-          this._super = tmp;
-          
-          return ret;
-        };
-      })(name, class_methods[name]) :
-      class_methods[name];
-		}
 				
   }
 
