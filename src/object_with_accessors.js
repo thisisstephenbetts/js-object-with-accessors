@@ -9,7 +9,7 @@
  */
 // Inspired by base2 and Prototype
 (function(){
-  var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+  var initializing = false;
   // The base Class implementation (does nothing)
   this.ObjectWithAccessors = function ObjectWithAccessors(){};
   
@@ -75,7 +75,6 @@
     // Populate our constructed prototype object
 		window[classname].prototype = prototype;
 
-				
   }
 
 	ObjectWithAccessors.prototype.init = function(params) {
@@ -107,29 +106,32 @@
 ObjectWithAccessors.default_params = {};
 
 ObjectWithAccessors.wrapMethodIfUsesSuper = function(name, native_methods, inherited_methods) {
-	console.log(name,native_methods[name])
 	var fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/
 	return typeof native_methods[name] == "function" && 
 				 typeof inherited_methods[name] == "function" && 
 				 fnTest.test(native_methods[name]) ?
-					 (function(name, fn){
-    					return function() {
-					      var tmp = this._super;
-      
-					      // Add a new ._super() method that is the same method
-					      // but on the super-class
-					      this._super = inherited_methods[name];
-      
-					      // The method only need to be bound temporarily, so we
-					      // remove it when we're done executing
-					      var ret = fn.apply(this, arguments);        
-					      this._super = tmp;
-      
-					      return ret;
-					    };
-				   })(name, native_methods[name]) :
-			   native_methods[name];
+		this.wrapped_method(native_methods[name], inherited_methods[name]) :
+	  native_methods[name];
 };
+
+ObjectWithAccessors.wrapped_method = function(defined_method, inherited_method) {
+
+	return function() {
+    var tmp = this._super;
+
+    // Add a new ._super() method that is the same method
+    // but on the super-class
+    this._super = inherited_method;
+
+    // The method only need to be bound temporarily, so we
+    // remove it when we're done executing
+    var ret = defined_method.apply(this, arguments);        
+    this._super = tmp;
+
+    return ret;
+  };
+	
+}
 
 ObjectWithAccessors.create_accessor = function(var_name) {
 	return function () {
