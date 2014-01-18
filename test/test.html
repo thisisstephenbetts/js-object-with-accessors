@@ -182,22 +182,30 @@
 
 		ObjectWithAccessors.createSubclass('Base',{
 			instance_methods: {
-				instance_method: function() { return 'Base#instance_method'; }
+				instance_method1: function() { return 'Base#instance_method1'; },
+				instance_method2: function() { return 'Base#instance_method2'; }
 			},
 			class_methods: {
-				class_method: function() { return 'Base#class_method'; }
+				class_method1: function() { return 'Base#class_method1'; },
+				class_method2: function() { return 'Base#class_method2'; }
 			}
 		});
 		
 		Base.createSubclass('BaseSubClassUsingSuper',{
 			instance_methods: {
-				instance_method: function() { 
-					return "BaseSubClassUsingSuper#instance_method (incorporating "+this._super()+")"
+				instance_method1: function() { 
+					return "BaseSubClassUsingSuper#instance_method1 (incorporating "+this._super()+")"
+					},
+				instance_method2: function() { 
+					return "BaseSubClassUsingSuper#instance_method2 (incorporating "+this._super()+")"
 					}
 			},
 			class_methods: {
-				class_method: function() {
-					return "BaseSubClassUsingSuper#class_method (incorporating "+this._super()+")"
+				class_method1: function() {
+					return "BaseSubClassUsingSuper#class_method1 (incorporating "+this._super()+")"
+				},
+				class_method2: function() {
+					return "BaseSubClassUsingSuper#class_method2 (incorporating "+this._super()+")"
 				}
 			}
 		});
@@ -206,16 +214,23 @@
 		var h = new BaseSubClassUsingSuper();
 
 		test('Testing Base',function() {
-			equal(g.instance_method(),'Base#instance_method');
-			equal(Base.class_method(),'Base#class_method');
-			equal(g.constructor.class_method(),'Base#class_method');
+			equal(g.instance_method1(),'Base#instance_method1');
+			equal(g.instance_method2(),'Base#instance_method2');
+			equal(Base.class_method1(),'Base#class_method1');
+			equal(g.constructor.class_method1(),'Base#class_method1');
+			equal(Base.class_method2(),'Base#class_method2');
+			equal(g.constructor.class_method2(),'Base#class_method2');
 		});
 
 		test('Testing Base',function() {
-			equal(h.instance_method(),'BaseSubClassUsingSuper#instance_method (incorporating Base#instance_method)');
-			equal(BaseSubClassUsingSuper.class_method(),
-					'BaseSubClassUsingSuper#class_method (incorporating Base#class_method)');
-			equal(h.constructor.class_method(),'BaseSubClassUsingSuper#class_method (incorporating Base#class_method)');
+			equal(h.instance_method1(),'BaseSubClassUsingSuper#instance_method1 (incorporating Base#instance_method1)');
+			equal(h.instance_method2(),'BaseSubClassUsingSuper#instance_method2 (incorporating Base#instance_method2)');
+			equal(BaseSubClassUsingSuper.class_method1(),
+					'BaseSubClassUsingSuper#class_method1 (incorporating Base#class_method1)');
+			equal(h.constructor.class_method1(),'BaseSubClassUsingSuper#class_method1 (incorporating Base#class_method1)');
+			equal(BaseSubClassUsingSuper.class_method2(),
+					'BaseSubClassUsingSuper#class_method2 (incorporating Base#class_method2)');
+			equal(h.constructor.class_method2(),'BaseSubClassUsingSuper#class_method2 (incorporating Base#class_method2)');
 		});
 		
 

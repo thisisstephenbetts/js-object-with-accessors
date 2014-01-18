@@ -44,27 +44,8 @@
 
 		var class_methods = class_props.class_methods || {};
 		for (var name in class_methods) {
-			window[classname][name] = 
-				typeof class_methods[name] == "function" && 
-				typeof parent[name] == "function" && 
-				fnTest.test(class_methods[name]) ?
-      (function(name, fn){
-        return function() {
-          var tmp = this._super;
-          
-          // Add a new ._super() method that is the same method
-          // but on the super-class
-          this._super = parent[name];
-          
-          // The method only need to be bound temporarily, so we
-          // remove it when we're done executing
-          var ret = fn.apply(this, arguments);        
-          this._super = tmp;
-          
-          return ret;
-        };
-      })(name, class_methods[name]) :
-      class_methods[name];
+			window[classname][name] =
+					this.wrapMethodIfUsesSuper(name,class_methods,parent);
 		}
 		
 		window[classname]._parent_class = parent;
@@ -82,35 +63,15 @@
 		}
 		
 		var instance_methods = class_props.instance_methods || {};
-
     // Copy the properties over onto the new prototype
     for (var name in instance_methods) {
       // Check if we're overwriting an existing function
-      prototype[name] = 
-					typeof instance_methods[name] == "function" && 
-	        typeof _super[name] == "function" && 
-					fnTest.test(instance_methods[name]) ?
-        (function(name, fn){
-          return function() {
-            var tmp = this._super;
-            
-            // Add a new ._super() method that is the same method
-            // but on the super-class
-            this._super = _super[name];
-            
-            // The method only need to be bound temporarily, so we
-            // remove it when we're done executing
-            var ret = fn.apply(this, arguments);        
-            this._super = tmp;
-            
-            return ret;
-          };
-        })(name, instance_methods[name]) :
-        instance_methods[name];
+      prototype[name] = this.wrapMethodIfUsesSuper(name, instance_methods, _super);
     }
 
     // Enforce the constructor to be what we expect
 		prototype.constructor = window[classname];
+
     // Populate our constructed prototype object
 		window[classname].prototype = prototype;
 
@@ -144,6 +105,31 @@
 })();
 
 ObjectWithAccessors.default_params = {};
+
+ObjectWithAccessors.wrapMethodIfUsesSuper = function(name, native_methods, inherited_methods) {
+	console.log(name,native_methods[name])
+	var fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/
+	return typeof native_methods[name] == "function" && 
+				 typeof inherited_methods[name] == "function" && 
+				 fnTest.test(native_methods[name]) ?
+					 (function(name, fn){
+    					return function() {
+					      var tmp = this._super;
+      
+					      // Add a new ._super() method that is the same method
+					      // but on the super-class
+					      this._super = inherited_methods[name];
+      
+					      // The method only need to be bound temporarily, so we
+					      // remove it when we're done executing
+					      var ret = fn.apply(this, arguments);        
+					      this._super = tmp;
+      
+					      return ret;
+					    };
+				   })(name, native_methods[name]) :
+			   native_methods[name];
+};
 
 ObjectWithAccessors.create_accessor = function(var_name) {
 	return function () {
