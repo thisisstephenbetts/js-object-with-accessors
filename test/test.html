@@ -70,7 +70,7 @@
 		b.fifth('b 5th');
 		b.extra_method('b extra');
 		
-		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth', fifth: 'b 5th'});
+		var b2 = new SubSubClass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth', fifth: 'b2 5th'});
 		
 		test('b, instance of SubSubClass',function() {
 			equal(b.first(),'b 1st');
@@ -180,7 +180,7 @@
 			equal(f.constructor.cmethod(),'ClassWithClassMethod#cmethod');
 		});
 
-		ObjectWithAccessors.createSubclass('Base',{
+		Class.createSubclass('Base',{
 			instance_methods: {
 				instance_method1: function() { return 'Base#instance_method1'; },
 				instance_method2: function() { return 'Base#instance_method2'; }
@@ -222,7 +222,7 @@
 			equal(g.constructor.class_method2(),'Base#class_method2');
 		});
 
-		test('Testing Base',function() {
+		test('Testing BaseSubClassUsingSuper',function() {
 			equal(h.instance_method1(),'BaseSubClassUsingSuper#instance_method1 (incorporating Base#instance_method1)');
 			equal(h.instance_method2(),'BaseSubClassUsingSuper#instance_method2 (incorporating Base#instance_method2)');
 			equal(BaseSubClassUsingSuper.class_method1(),

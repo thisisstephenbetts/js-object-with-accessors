@@ -1,146 +1,56 @@
 // Dynamic object creation from simple properties list, with inheritance.
-//  Example of use below
+Class.createSubclass('ObjectWithAccessors', {
+	instance_methods: {
+		init_vars: function(params) {
+			params = params || {};
+			this.add_defaults_to_params(params);
 
-// Also using http://ejohn.org/blog/simple-javascript-inheritance/ 
+			var that = this;
+			for (var k in params || {}) {
+				if (that[k] !== undefined) { that[k](params[k]); }			
+			}
+		},
+		init: function(params) {
+			if (params === false) {return false}
+			this.init_vars(params);
+		},
+		add_defaults_to_params: function(params) {
 
-/* Simple JavaScript Inheritance
- * By John Resig http://ejohn.org/
- * MIT Licensed.
- */
-// Inspired by base2 and Prototype
-(function(){
-  var initializing = false;
-  // The base Class implementation (does nothing)
-  this.ObjectWithAccessors = function ObjectWithAccessors(){};
-  
-  // Create a new Class that inherits from this class
-  ObjectWithAccessors.createSubclass = function(classname,class_props) {
-		var parent = this;
-
-    var _super = parent.prototype;
-
-    // Instantiate a base class (but only create the instance,
-    // don't run the init constructor)
-    initializing = true;
-    var prototype = new parent();
-    initializing = false;
-
-		eval(
-			"function "+classname+"() { "+
-				// All construction is actually done in the init method
-		    "if ( !initializing && this.init ) {"+
-		    "    this.init.apply(this, arguments);"+
-		    "}"+
-			"};"+
-			"window."+classname+" = "+classname+";"
-		);
-		
-		// console.log(eval("classname"),window[classname])
-		for (var inherited_class_method in parent) {
-			if (typeof parent[inherited_class_method] === "function") {
-				window[classname][inherited_class_method] = parent[inherited_class_method];
+			var defaults = this.constructor.default_params;
+			for (var v in defaults) {
+				if (params[v] === undefined && defaults[v] !== undefined) { 
+					params[v] = defaults[v];
+				}
 			}
 		}
+	},
+	class_methods: {
+		class_init: function(props) {
+			var defaults = this._parent_class.default_params || {};
+			for (var param in props.default_params) {
+				defaults[param] = props.default_params[param];
+			}
+			this.default_params = defaults;
 
-		var class_methods = class_props.class_methods || {};
-		for (var name in class_methods) {
-			window[classname][name] =
-					this.wrapMethodIfUsesSuper(name,class_methods,parent);
-		}
-		
-		window[classname]._parent_class = parent;
-
-		var defaults = parent.default_params || {};
-		for (var param in class_props.default_params) {
-			defaults[param] = class_props.default_params[param];
-		}
-		window[classname].default_params = defaults;
-
-		var accessors = class_props.accessors || [];
-		for (var i=0; i<accessors.length; i++) {
-			var  acc_method = accessors[i];
-			prototype[acc_method] = this.create_accessor('_'+acc_method);
-		}
-		
-		var instance_methods = class_props.instance_methods || {};
-    // Copy the properties over onto the new prototype
-    for (var name in instance_methods) {
-      // Check if we're overwriting an existing function
-      prototype[name] = this.wrapMethodIfUsesSuper(name, instance_methods, _super);
-    }
-
-    // Enforce the constructor to be what we expect
-		prototype.constructor = window[classname];
-
-    // Populate our constructed prototype object
-		window[classname].prototype = prototype;
-
-  }
-
-	ObjectWithAccessors.prototype.init = function(params) {
-		if (params === false) {return false}
-		this.init_vars(params);
-	};
-	
-	ObjectWithAccessors.prototype.add_defaults_to_params = function(params) {
-
-		var defaults = this.constructor.default_params;
-		for (var v in defaults) {
-			if (params[v] === undefined && defaults[v] !== undefined) { 
-				params[v] = defaults[v];
+			var accessors = props.accessors || [];
+			for (var i=0; i<accessors.length; i++) {
+				var  acc_method = accessors[i];
+				if (typeof this.prototype[acc_method] !== "function") {
+					this.prototype[acc_method] = this.create_accessor('_'+acc_method);					
+				}
+			}
+		},
+		create_accessor: function(var_name) {
+			return function () {
+				if (arguments.length > 0) {
+					this[var_name]=arguments[0];
+				}
+				return this[var_name];		
 			}
 		}
-	};
-	
-	ObjectWithAccessors.prototype.init_vars = function(params) {
-		params = params || {};
-		this.add_defaults_to_params(params);
 		
-		var that = this;
-		for (var k in params || {}) {
-			if (that[k] !== undefined) { that[k](params[k]); }			
-		}
-	};
-})();
-
-ObjectWithAccessors.default_params = {};
-
-ObjectWithAccessors.wrapMethodIfUsesSuper = function(name, native_methods, inherited_methods) {
-	var fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/
-	return typeof native_methods[name] == "function" && 
-				 typeof inherited_methods[name] == "function" && 
-				 fnTest.test(native_methods[name]) ?
-		this.wrapped_method(native_methods[name], inherited_methods[name]) :
-	  native_methods[name];
-};
-
-ObjectWithAccessors.wrapped_method = function(defined_method, inherited_method) {
-
-	return function() {
-    var tmp = this._super;
-
-    // Add a new ._super() method that is the same method
-    // but on the super-class
-    this._super = inherited_method;
-
-    // The method only need to be bound temporarily, so we
-    // remove it when we're done executing
-    var ret = defined_method.apply(this, arguments);        
-    this._super = tmp;
-
-    return ret;
-  };
-	
-}
-
-ObjectWithAccessors.create_accessor = function(var_name) {
-	return function () {
-		if (arguments.length > 0) {
-			this[var_name]=arguments[0];
-		}
-		return this[var_name];		
 	}
-}
+});
 
 
 // // Example Usage
