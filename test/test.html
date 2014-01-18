@@ -180,6 +180,45 @@
 			equal(f.constructor.cmethod(),'ClassWithClassMethod#cmethod');
 		});
 
+		ObjectWithAccessors.createSubclass('Base',{
+			instance_methods: {
+				instance_method: function() { return 'Base#instance_method'; }
+			},
+			class_methods: {
+				class_method: function() { return 'Base#class_method'; }
+			}
+		});
+		
+		Base.createSubclass('BaseSubClassUsingSuper',{
+			instance_methods: {
+				instance_method: function() { 
+					return "BaseSubClassUsingSuper#instance_method (incorporating "+this._super()+")"
+					}
+			},
+			class_methods: {
+				class_method: function() {
+					return "BaseSubClassUsingSuper#class_method (incorporating "+this._super()+")"
+				}
+			}
+		});
+		
+		var g = new Base();
+		var h = new BaseSubClassUsingSuper();
+
+		test('Testing Base',function() {
+			equal(g.instance_method(),'Base#instance_method');
+			equal(Base.class_method(),'Base#class_method');
+			equal(g.constructor.class_method(),'Base#class_method');
+		});
+
+		test('Testing Base',function() {
+			equal(h.instance_method(),'BaseSubClassUsingSuper#instance_method (incorporating Base#instance_method)');
+			equal(BaseSubClassUsingSuper.class_method(),
+					'BaseSubClassUsingSuper#class_method (incorporating Base#class_method)');
+			equal(h.constructor.class_method(),'BaseSubClassUsingSuper#class_method (incorporating Base#class_method)');
+		});
+		
+
 
 	</script>
 </head>

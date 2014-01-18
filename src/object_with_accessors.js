@@ -46,6 +46,7 @@
 		for (var name in class_methods) {
 			window[classname][name] = 
 				typeof class_methods[name] == "function" && 
+				typeof parent[name] == "function" && 
 				fnTest.test(class_methods[name]) ?
       (function(name, fn){
         return function() {
@@ -53,7 +54,7 @@
           
           // Add a new ._super() method that is the same method
           // but on the super-class
-          this._super = _super[name];
+          this._super = parent[name];
           
           // The method only need to be bound temporarily, so we
           // remove it when we're done executing
@@ -74,19 +75,16 @@
 		}
 		window[classname].default_params = defaults;
 
-		var instance_methods = class_props.instance_methods || {};
-
 		var accessors = class_props.accessors || [];
 		for (var i=0; i<accessors.length; i++) {
 			var  acc_method = accessors[i];
-
-			if (instance_methods[acc_method]) { break; }
-			instance_methods[acc_method] = 
-					this.create_accessor('_'+acc_method);
+			prototype[acc_method] = this.create_accessor('_'+acc_method);
 		}
 		
+		var instance_methods = class_props.instance_methods || {};
+
     // Copy the properties over onto the new prototype
-    for (var name in instance_methods || {}) {
+    for (var name in instance_methods) {
       // Check if we're overwriting an existing function
       prototype[name] = 
 					typeof instance_methods[name] == "function" && 
