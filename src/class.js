@@ -10,6 +10,8 @@
   
   // Create a new Class that inherits from this class
   Class.createSubclass = function(classname,class_props) {
+		class_props = class_props || {};
+
 		var parent = this;
 
     var _super = parent.prototype;

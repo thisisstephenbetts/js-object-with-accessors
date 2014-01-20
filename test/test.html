@@ -38,32 +38,30 @@
 			}
 		}
 	});
-	
-	var g = new BaseToSubclass();
-	var h = new BaseSubclassUsingSuper();
+
+	var base_i1 = new BaseToSubclass();
+	var base_i2 = new BaseSubclassUsingSuper();
 
 	test('Testing BaseToSubclass',function() {
-		equal(g.instance_method1(),'BaseToSubclass#instance_method1');
-		equal(g.instance_method2(),'BaseToSubclass#instance_method2');
+		equal(base_i1.instance_method1(),'BaseToSubclass#instance_method1');
+		equal(base_i1.instance_method2(),'BaseToSubclass#instance_method2');
 		equal(BaseToSubclass.class_method1(),'BaseToSubclass#class_method1');
-		equal(g.constructor.class_method1(),'BaseToSubclass#class_method1');
+		equal(base_i1.constructor.class_method1(),'BaseToSubclass#class_method1');
 		equal(BaseToSubclass.class_method2(),'BaseToSubclass#class_method2');
-		equal(g.constructor.class_method2(),'BaseToSubclass#class_method2');
+		equal(base_i1.constructor.class_method2(),'BaseToSubclass#class_method2');
 	});
 
 	test('Testing BaseSubclassUsingSuper',function() {
-		equal(h.instance_method1(),'BaseSubclassUsingSuper#instance_method1 (incorporating BaseToSubclass#instance_method1)');
-		equal(h.instance_method2(),'BaseSubclassUsingSuper#instance_method2 (incorporating BaseToSubclass#instance_method2)');
+		equal(base_i2.instance_method1(),'BaseSubclassUsingSuper#instance_method1 (incorporating BaseToSubclass#instance_method1)');
+		equal(base_i2.instance_method2(),'BaseSubclassUsingSuper#instance_method2 (incorporating BaseToSubclass#instance_method2)');
 		equal(BaseSubclassUsingSuper.class_method1(),
 				'BaseSubclassUsingSuper#class_method1 (incorporating BaseToSubclass#class_method1)');
-		equal(h.constructor.class_method1(),'BaseSubclassUsingSuper#class_method1 (incorporating BaseToSubclass#class_method1)');
+		equal(base_i2.constructor.class_method1(),'BaseSubclassUsingSuper#class_method1 (incorporating BaseToSubclass#class_method1)');
 		equal(BaseSubclassUsingSuper.class_method2(),
 				'BaseSubclassUsingSuper#class_method2 (incorporating BaseToSubclass#class_method2)');
-		equal(h.constructor.class_method2(),'BaseSubclassUsingSuper#class_method2 (incorporating BaseToSubclass#class_method2)');
+		equal(base_i2.constructor.class_method2(),'BaseSubclassUsingSuper#class_method2 (incorporating BaseToSubclass#class_method2)');
 	});
 	
-
-
 		ObjectWithAccessors.createSubclass('Subclass',{
 			accessors: ['first','second','third'],
 			instance_methods: {
