@@ -12,7 +12,8 @@
 	Class.createSubclass('BaseToSubclass',{
 		instance_methods: {
 			instance_method1: function() { return 'BaseToSubclass#instance_method1'; },
-			instance_method2: function() { return 'BaseToSubclass#instance_method2'; }
+			instance_method2: function() { return 'BaseToSubclass#instance_method2'; },
+			method_to_inherit: function() { return 'Inherited method method_to_inherit (originally in BaseToSubclass)'; }
 		},
 		class_methods: {
 			class_method1: function() { return 'BaseToSubclass#class_method1'; },
@@ -38,11 +39,14 @@
 			}
 		}
 	});
-
+	
 	var base_i1 = new BaseToSubclass();
 	var base_i2 = new BaseSubclassUsingSuper();
 
 	test('Testing BaseToSubclass',function() {
+		equal(base_i1.constructor.name,'BaseToSubclass');
+		equal(base_i1.constructor._parent_class.name,'Class');
+		equal(base_i1.method_to_inherit(),'Inherited method method_to_inherit (originally in BaseToSubclass)');
 		equal(base_i1.instance_method1(),'BaseToSubclass#instance_method1');
 		equal(base_i1.instance_method2(),'BaseToSubclass#instance_method2');
 		equal(BaseToSubclass.class_method1(),'BaseToSubclass#class_method1');
@@ -52,6 +56,9 @@
 	});
 
 	test('Testing BaseSubclassUsingSuper',function() {
+		equal(base_i2.constructor.name,'BaseSubclassUsingSuper');
+		equal(base_i2.constructor._parent_class.name,'BaseToSubclass');
+		equal(base_i2.method_to_inherit(),'Inherited method method_to_inherit (originally in BaseToSubclass)');
 		equal(base_i2.instance_method1(),'BaseSubclassUsingSuper#instance_method1 (incorporating BaseToSubclass#instance_method1)');
 		equal(base_i2.instance_method2(),'BaseSubclassUsingSuper#instance_method2 (incorporating BaseToSubclass#instance_method2)');
 		equal(BaseSubclassUsingSuper.class_method1(),
@@ -62,177 +69,196 @@
 		equal(base_i2.constructor.class_method2(),'BaseSubclassUsingSuper#class_method2 (incorporating BaseToSubclass#class_method2)');
 	});
 	
-		ObjectWithAccessors.createSubclass('Subclass',{
-			accessors: ['first','second','third'],
-			instance_methods: {
-				init: function(args) { this._super(args) }				
+	var dummy_instance = new (Class.createSubclass('Dummy',{
+		class_methods: {
+			class_init: function(args) {
+				this._super(args);
+				this.prototype.dummy_method = function() { return "Dummy#dummy_method"; } 
 			}
-		});
-		// Adding another method
-		Subclass.prototype.another = function() {
-			return 'another method in class '+this.constructor.name
 		}
-		
-		Subclass.createSubclass('SubSubclass',{
-			accessors: ['fourth','fifth'],
-			instance_methods: {
-				init: function(args) { this._super(args) },
-				second: function() { return 'Overridden (inherited) "second" method' },
-				fifth: function() { return 'Overridden (new) "fifth" method' }
-			},
-		});
-
-		// Overriding defined method
-		SubSubclass.prototype.third = function() {
-			return 'Externally overridden "third" method';
+	}));
+	
+	test('Testing class_init is called', function() {
+		equal(dummy_instance.dummy_method(),'Dummy#dummy_method');
+	})
+	
+	var obj_w_acc = new ObjectWithAccessors();
+	test('ObjectWithAccessors',function() {
+		equal(obj_w_acc.constructor.name,'ObjectWithAccessors');
+		equal(obj_w_acc.constructor._parent_class.name,'Class');
+	});
+	
+	ObjectWithAccessors.createSubclass('Subclass',{
+		accessors: ['first','second','third'],
+		instance_methods: {
+			init: function(args) { this._super(args) }
 		}
-		
-		//Defining new method
-		SubSubclass.prototype.extra_method = function() {
-			return 'New method SubSubclass#extra_method'
+	});
+	// Adding another method
+	Subclass.prototype.another = function() {
+		return 'another method in class '+this.constructor.name
+	}
+	
+	Subclass.createSubclass('SubSubclass',{
+		accessors: ['fourth','fifth'],
+		instance_methods: {
+			init: function(args) { this._super(args) },
+			second: function() { return 'Overridden (inherited) "second" method' },
+			fifth: function() { return 'Overridden (new) "fifth" method' }
+		},
+	});
+	
+	// Overriding defined method
+	SubSubclass.prototype.third = function() {
+		return 'Externally overridden "third" method';
+	}
+	
+	//Defining new method
+	SubSubclass.prototype.extra_method = function() {
+		return 'New method SubSubclass#extra_method'
+	}
+	
+	var a = new Subclass;
+	a.first('a 1st');
+	a.second('a 2nd');
+	
+	var a2 = new Subclass({first: 'A', second: 'B', third: 'C'});
+	
+	test('a, instance of Subclass',function() {
+		equal(a.first(),'a 1st');
+		equal(a.second(),'a 2nd');
+		equal(a.third(),undefined);
+		throws(function() { a.fourth() },"TypeError: Object #<Subclass> has no method 'fourth'");
+		equal(a.another(),'another method in class Subclass');
+	})
+	
+	test('a2, another instance of Subclass',function() {
+		equal(a2.first(),'A');
+		equal(a2.second(),'B');
+		equal(a2.third(),'C');
+		throws(function() { a2.fourth() },"TypeError: Object #<Subclass> has no method 'fourth'");
+		equal(a2.another(),'another method in class Subclass');
+	});
+	
+	
+	
+	var b = new SubSubclass;
+	b.first('b 1st');
+	b.second('b 2nd');
+	b.third('b 3rd');
+	b.fourth('b 4th');
+	b.fifth('b 5th');
+	b.extra_method('b extra');
+	
+	var b2 = new SubSubclass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth', fifth: 'b2 5th'});
+	
+	test('b, instance of SubSubclass',function() {
+		equal(b.first(),'b 1st');
+		equal(b.second(),'Overridden (inherited) "second" method');
+		equal(b.third(),'Externally overridden "third" method');
+		equal(b.fourth(),'b 4th');
+		equal(b.fifth(),'Overridden (new) "fifth" method');
+		equal(b.another(),'another method in class SubSubclass');
+		equal(b.extra_method(),'New method SubSubclass#extra_method');
+	});
+	
+	test('b2, another instance of SubSubclass',function() {
+		equal(b2.first(),'b2 first');
+		equal(b2.second(),'Overridden (inherited) "second" method');
+		equal(b2.third(),'Externally overridden "third" method');
+		equal(b2.fourth(),'b2 fourth');
+		equal(b2.fifth(),'Overridden (new) "fifth" method');
+		equal(b2.another(),'another method in class SubSubclass');
+		equal(b2.extra_method(),'New method SubSubclass#extra_method');
+	});
+	
+	test("a instanceof Subclass",function() {
+		ok(a instanceof Subclass);
+		equal(a.constructor._parent_class.name,ObjectWithAccessors.name);
+	});
+	
+	
+	test("a not instanceof SubSubclass",function() {
+		ok(!(a instanceof SubSubclass));
+	});
+	
+	test("b instanceof Subclass",function() {
+		ok(b instanceof Subclass);
+	});
+	
+	
+	test("b instanceof SubSubclass",function() {
+		ok(b instanceof SubSubclass);
+		equal(b.constructor._parent_class.name,Subclass.name);
+	});
+	
+	
+	ObjectWithAccessors.createSubclass('ClassWithDefaults',{
+		accessors: ['meth1','meth2'],
+		default_params: {meth2: 'meth2 default'}
+	});
+	
+	ClassWithDefaults.createSubclass('ClassWithDefaultsSubclass',{
+		accessors: ['meth3','meth4'],
+		default_params: {meth4: 'meth4 default'},
+		instance_methods: {
+		},
+		class_methods: {
 		}
-		
-		var a = new Subclass;
-		a.first('a 1st');
-		a.second('a 2nd');
-
-		var a2 = new Subclass({first: 'A', second: 'B', third: 'C'});
-
-		test('a, instance of Subclass',function() {
-			equal(a.first(),'a 1st');
-			equal(a.second(),'a 2nd');
-			equal(a.third(),undefined);
-			throws(function() { a.fourth() },"TypeError: Object #<Subclass> has no method 'fourth'");
-			equal(a.another(),'another method in class Subclass');
-		})
-		
-		test('a2, another instance of Subclass',function() {
-			equal(a2.first(),'A');
-			equal(a2.second(),'B');
-			equal(a2.third(),'C');
-			throws(function() { a2.fourth() },"TypeError: Object #<Subclass> has no method 'fourth'");
-			equal(a2.another(),'another method in class Subclass');
-		});
-
-
-
-		var b = new SubSubclass;
-		b.first('b 1st');
-		b.second('b 2nd');
-		b.third('b 3rd');
-		b.fourth('b 4th');
-		b.fifth('b 5th');
-		b.extra_method('b extra');
-		
-		var b2 = new SubSubclass({first: 'b2 first', second: 'b2 second', third: 'b2 third', fourth: 'b2 fourth', fifth: 'b2 5th'});
-		
-		test('b, instance of SubSubclass',function() {
-			equal(b.first(),'b 1st');
-			equal(b.second(),'Overridden (inherited) "second" method');
-			equal(b.third(),'Externally overridden "third" method');
-			equal(b.fourth(),'b 4th');
-			equal(b.fifth(),'Overridden (new) "fifth" method');
-			equal(b.another(),'another method in class SubSubclass');
-			equal(b.extra_method(),'New method SubSubclass#extra_method');
-		});
-
-		test('b2, another instance of SubSubclass',function() {
-			equal(b2.first(),'b2 first');
-			equal(b2.second(),'Overridden (inherited) "second" method');
-			equal(b2.third(),'Externally overridden "third" method');
-			equal(b2.fourth(),'b2 fourth');
-			equal(b2.fifth(),'Overridden (new) "fifth" method');
-			equal(b2.another(),'another method in class SubSubclass');
-			equal(b2.extra_method(),'New method SubSubclass#extra_method');
-		});
-
-		test("a instanceof Subclass",function() {
-			ok(a instanceof Subclass);
-			equal(a.constructor._parent_class.name,ObjectWithAccessors.name);
-		});
-
-
-		test("a not instanceof SubSubclass",function() {
-			ok(!(a instanceof SubSubclass));
-		});
-
-		test("b instanceof Subclass",function() {
-			ok(b instanceof Subclass);
-		});
-
-
-		test("b instanceof SubSubclass",function() {
-			ok(b instanceof SubSubclass);
-			equal(b.constructor._parent_class.name,Subclass.name);
-		});
-
-
-		ObjectWithAccessors.createSubclass('ClassWithDefaults',{
-			accessors: ['meth1','meth2'],
-			default_params: {meth2: 'meth2 default'}
-		});
-
-		ClassWithDefaults.createSubclass('ClassWithDefaultsSubclass',{
-			accessors: ['meth3','meth4'],
-			default_params: {meth4: 'meth4 default'},
-			instance_methods: {
-			},
-			class_methods: {
-			}
-		});
-
-		var c = new ClassWithDefaults();
-		var c2 = new ClassWithDefaults({meth1:'c2 meth1',meth2:'c2 meth2'});
-
-		var d = new ClassWithDefaultsSubclass();
-		var d2 = new ClassWithDefaultsSubclass({
-			meth1:'d2 meth1',meth2:'d2 meth2',meth3:'d2 meth3',meth4:'d2 meth4'
-		});
-		
-		test('c, instance of ClassWithDefaults',function() {
-			equal(c.meth1(),undefined);
-			equal(c.meth2(),'meth2 default');
-		});
-
-		test('c2, another instance of ClassWithDefaults, created with params',function() {
-			equal(c2.meth1(),'c2 meth1');
-			equal(c2.meth2(),'c2 meth2');
-		});
-		
-		test('d, instance of ClassWithDefaultsSubclass',function() {
-			equal(d.meth1(),undefined);
-			equal(d.meth2(),'meth2 default');
-			equal(d.meth3(),undefined);
-			equal(d.meth4(),'meth4 default');
-		});
-
-		test('d2, another instance of ClassWithDefaultsSubclass, created with params',function() {
-			equal(d2.meth1(),'d2 meth1');
-			equal(d2.meth2(),'d2 meth2');
-			equal(d2.meth3(),'d2 meth3');
-			equal(d2.meth4(),'d2 meth4');
-		});
-		
-		ObjectWithAccessors.createSubclass('ClassWithClassMethod',{
-			class_methods: {
-				cmethod: function() { return "ClassWithClassMethod#cmethod" }
-			}
-		});
-
-		ClassWithClassMethod.createSubclass('SubclassWithClassMethod',{});
-
-		var e = new ClassWithClassMethod();
-		var f = new SubclassWithClassMethod();
-		
-		test('Testing ClassWithClassMethod',function() {
-			equal(ClassWithClassMethod.cmethod(),'ClassWithClassMethod#cmethod');
-			equal(e.constructor.cmethod(),'ClassWithClassMethod#cmethod');
-		});
-
-		test('Testing SubclassWithClassMethod (inheritance from ClassWithClassMethod)',function() {
-			equal(SubclassWithClassMethod.cmethod(),'ClassWithClassMethod#cmethod');
-			equal(f.constructor.cmethod(),'ClassWithClassMethod#cmethod');
-		});
+	});
+	
+	var c = new ClassWithDefaults();
+	var c2 = new ClassWithDefaults({meth1:'c2 meth1',meth2:'c2 meth2'});
+	
+	var d = new ClassWithDefaultsSubclass();
+	var d2 = new ClassWithDefaultsSubclass({
+		meth1:'d2 meth1',meth2:'d2 meth2',meth3:'d2 meth3',meth4:'d2 meth4'
+	});
+	
+	test('c, instance of ClassWithDefaults',function() {
+		equal(c.meth1(),undefined);
+		equal(c.meth2(),'meth2 default');
+	});
+	
+	test('c2, another instance of ClassWithDefaults, created with params',function() {
+		equal(c2.meth1(),'c2 meth1');
+		equal(c2.meth2(),'c2 meth2');
+	});
+	
+	test('d, instance of ClassWithDefaultsSubclass',function() {
+		equal(d.meth1(),undefined);
+		equal(d.meth2(),'meth2 default');
+		equal(d.meth3(),undefined);
+		equal(d.meth4(),'meth4 default');
+	});
+	
+	test('d2, another instance of ClassWithDefaultsSubclass, created with params',function() {
+		equal(d2.meth1(),'d2 meth1');
+		equal(d2.meth2(),'d2 meth2');
+		equal(d2.meth3(),'d2 meth3');
+		equal(d2.meth4(),'d2 meth4');
+	});
+	
+	ObjectWithAccessors.createSubclass('ClassWithClassMethod',{
+		class_methods: {
+			cmethod: function() { return "ClassWithClassMethod#cmethod" }
+		}
+	});
+	
+	ClassWithClassMethod.createSubclass('SubclassWithClassMethod',{});
+	
+	var e = new ClassWithClassMethod();
+	var f = new SubclassWithClassMethod();
+	
+	test('Testing ClassWithClassMethod',function() {
+		equal(ClassWithClassMethod.cmethod(),'ClassWithClassMethod#cmethod');
+		equal(e.constructor.cmethod(),'ClassWithClassMethod#cmethod');
+	});
+	
+	test('Testing SubclassWithClassMethod (inheritance from ClassWithClassMethod)',function() {
+		equal(SubclassWithClassMethod.cmethod(),'ClassWithClassMethod#cmethod');
+		equal(f.constructor.cmethod(),'ClassWithClassMethod#cmethod');
+	});
 
 
 

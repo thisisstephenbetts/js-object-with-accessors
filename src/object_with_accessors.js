@@ -26,6 +26,8 @@ Class.createSubclass('ObjectWithAccessors', {
 	},
 	class_methods: {
 		class_init: function(props) {
+			this._super(props);
+
 			var defaults = this._parent_class.default_params || {};
 			for (var param in props.default_params) {
 				defaults[param] = props.default_params[param];

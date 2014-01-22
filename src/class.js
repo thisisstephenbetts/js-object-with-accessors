@@ -13,15 +13,6 @@
 		class_props = class_props || {};
 
 		var parent = this;
-
-    var _super = parent.prototype;
-
-    // Instantiate a base class (but only create the instance,
-    // don't run the init constructor)
-    initializing = true;
-    var prototype = new parent();
-    initializing = false;
-
 		eval(
 			"function "+classname+"() { "+
 				// All construction is actually done in the init method
@@ -31,51 +22,65 @@
 			"};"+
 			"window."+classname+" = "+classname+";"
 		);
+		window[classname]._parent_class = parent;
+
+    // Instantiate a base class (but only create the instance,
+    // don't run the init constructor)
+    initializing = true;
+		window[classname].prototype = new parent();
+    initializing = false;
+		
+		// This will probably get processed twice
+		var class_init = (typeof (class_props.class_methods || {}).class_init === "function") ? 
+				Class.wrapMethodIfUsesSuper(
+						class_props.class_methods.class_init,parent.class_init) :
+				parent.class_init;
+		class_init.call(window[classname],class_props);
+		
+		return window[classname];
+  }
+	
+})();
+
+Class.class_init = function(class_props) {
+		var parent = this._parent_class || Class;
+    var _super = parent.prototype;
+
 		
 		// console.log(eval("classname"),window[classname])
 		for (var inherited_class_method in parent) {
 			if (typeof parent[inherited_class_method] === "function") {
-				window[classname][inherited_class_method] = parent[inherited_class_method];
+				if (!this[inherited_class_method]) {
+					this[inherited_class_method] = parent[inherited_class_method];
+				}
 			}
 		}
 
 		var class_methods = class_props.class_methods || {};
 		for (var name in class_methods) {
-			window[classname][name] =
-					this.wrapMethodIfUsesSuper(name,class_methods,parent);
+			this[name] = this.wrapMethodIfUsesSuper(class_methods[name],parent[name]);
 		}
 		
-		window[classname]._parent_class = parent;
 
 		var instance_methods = class_props.instance_methods || {};
     // Copy the properties over onto the new prototype
     for (var name in instance_methods) {
       // Check if we're overwriting an existing function
-      prototype[name] = this.wrapMethodIfUsesSuper(name, instance_methods, _super);
+      this.prototype[name] = this.wrapMethodIfUsesSuper(instance_methods[name], _super[name]);
     }
 
     // Enforce the constructor to be what we expect
-		prototype.constructor = window[classname];
+		this.prototype.constructor = this;
 
-    // Populate our constructed prototype object
-		window[classname].prototype = prototype;
+};
 
-		if (typeof window[classname].class_init === "function") {
-			window[classname].class_init.call(window[classname],class_props);
-		}
-		
-  }
-	
-})();
-
-
-Class.wrapMethodIfUsesSuper = function(name, native_methods, inherited_methods) {
+Class.wrapMethodIfUsesSuper = function(native_method, inherited_method) {
 	var fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/
-	return typeof native_methods[name] == "function" && 
-				 typeof inherited_methods[name] == "function" && 
-				 fnTest.test(native_methods[name]) ?
-		this.wrapped_method(native_methods[name], inherited_methods[name]) :
-	  native_methods[name];
+	return typeof native_method == "function" && 
+				 typeof inherited_method == "function" && 
+				 fnTest.test(native_method) ?
+		this.wrapped_method(native_method, inherited_method) :
+	  native_method;
 };
 
 Class.wrapped_method = function(defined_method, inherited_method) {
