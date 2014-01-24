@@ -4,11 +4,11 @@ ObjectWithAccessors.createSubclass('JQElementWrapper',{
 		init: function(args) {
 
 			if (this._super(args) === false) { return false }
-			this.$($(this.elem_html()));
+			this.$($(this.original_html()));
 
 			this.$().data('o',this)
 		},
-		elem_html: function() {
+		original_html: function() {
 			return '<div />';
 		}
 	}
