@@ -12,11 +12,9 @@
 	<script>
 
 	Class.createSubclass('BaseToSubclass',{
-		instance_methods: {
-			instance_method1: function() { return 'BaseToSubclass#instance_method1'; },
-			instance_method2: function() { return 'BaseToSubclass#instance_method2'; },
-			method_to_inherit: function() { return 'Inherited method method_to_inherit (originally in BaseToSubclass)'; }
-		},
+		instance_method1: function() { return 'BaseToSubclass#instance_method1'; },
+		instance_method2: function() { return 'BaseToSubclass#instance_method2'; },
+		method_to_inherit: function() { return 'Inherited method method_to_inherit (originally in BaseToSubclass)'; },
 		class_methods: {
 			class_method1: function() { return 'BaseToSubclass#class_method1'; },
 			class_method2: function() { return 'BaseToSubclass#class_method2'; }
@@ -24,13 +22,11 @@
 	});
 	
 	BaseToSubclass.createSubclass('BaseSubclassUsingSuper',{
-		instance_methods: {
-			instance_method1: function() { 
-				return "BaseSubclassUsingSuper#instance_method1 (incorporating "+this._super()+")"
-				},
-			instance_method2: function() { 
-				return "BaseSubclassUsingSuper#instance_method2 (incorporating "+this._super()+")"
-				}
+		instance_method1: function() { 
+			return "BaseSubclassUsingSuper#instance_method1 (incorporating "+this._super()+")"
+		},
+		instance_method2: function() { 
+			return "BaseSubclassUsingSuper#instance_method2 (incorporating "+this._super()+")"
 		},
 		class_methods: {
 			class_method1: function() {
@@ -72,11 +68,9 @@
 	});
 	
 	Class.createSubclass('SecondBase',{
-		instance_methods: {
-			instance_method1: function() { return 'SecondBase#instance_method1'; }
-		},
+		instance_method1: function() { return 'SecondBase#instance_method1'; },
 		class_methods: {
-			class_method1: function() { return 'SecondBase#class_method1'; },
+			class_method1: function() { return 'SecondBase#class_method1'; }
 		}
 	});
 	
@@ -113,9 +107,7 @@
 	
 	ObjectWithAccessors.createSubclass('Subclass',{
 		accessors: ['first','second','third'],
-		instance_methods: {
-			init: function(args) { this._super(args) }
-		}
+		init: function(args) { this._super(args) }
 	});
 	
 	sc_i1 = new Subclass({first: 'sc_i1: 1st'});
@@ -134,11 +126,9 @@
 	
 	Subclass.createSubclass('SubSubclass',{
 		accessors: ['fourth','fifth'],
-		instance_methods: {
-			init: function(args) { this._super(args) },
-			second: function() { return 'Overridden (inherited) "second" method' },
-			fifth: function() { return 'Overridden (new) "fifth" method' }
-		},
+		init: function(args) { this._super(args) },
+		second: function() { return 'Overridden (inherited) "second" method' },
+		fifth: function() { return 'Overridden (new) "fifth" method' }
 	});
 	
 	// Overriding defined method
@@ -234,8 +224,6 @@
 	ClassWithDefaults.createSubclass('ClassWithDefaultsSubclass',{
 		accessors: ['meth3','meth4'],
 		default_params: {meth4: 'meth4 default'},
-		instance_methods: {
-		},
 		class_methods: {
 		}
 	});
@@ -294,17 +282,13 @@
 	});
 
 	var jq_bare = new (JQElementWrapper.createSubclass('BasicElement', {
-		instance_methods: {
-			original_html: function() {return '<a></a>'}
-		}
+		original_html: function() {return '<a></a>'}
 	}));
 	
 	var jq_init = new (BasicElement.createSubclass('BasicWithInit', {
-		instance_methods: {
-			init: function() {
-				this._super();
-				this.$().attr({href:"http://en.wikipedia.org/"})
-			}
+		init: function() {
+			this._super();
+			this.$().attr({href:"http://en.wikipedia.org/"})
 		}
 	}));
 	

@@ -28,7 +28,7 @@ Class.class_init = function(class_props) {
 	}
 
 
-	var instance_methods = class_props.instance_methods || {};
+	var instance_methods = this.get_instance_methods(class_props);
   // Copy the properties over onto the new prototype
   for (var name in instance_methods) {
     // Check if we're overwriting an existing function
@@ -39,6 +39,19 @@ Class.class_init = function(class_props) {
 	this.prototype.constructor = this;
 
 };
+
+Class.get_instance_methods = function(props) {
+	
+	var instance_methods = {};
+	for (var key in props || {}) {
+		// Any functions in props should be instance methods
+		console.log(key, typeof props[key])
+		if (typeof props[key] === "function") {
+			instance_methods[key] = props[key];
+		}
+	}
+	return instance_methods;
+}
 
 Class.wrapMethodIfUsesSuper = function(native_method, inherited_method) {
 	var fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/

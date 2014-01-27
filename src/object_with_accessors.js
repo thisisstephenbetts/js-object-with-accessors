@@ -1,26 +1,25 @@
 // Dynamic object creation from simple properties list, with inheritance.
 Class.createSubclass('ObjectWithAccessors', {
-	instance_methods: {
-		init_vars: function(params) {
-			params = params || {};
-			this.add_defaults_to_params(params);
+	init: function(params) {
+		if (params === false) {return false}
+		this.init_vars(params);
+	},
+	init_vars: function(params) {
+		params = params || {};
 
-			var that = this;
-			for (var k in params || {}) {
-				if (that[k] !== undefined) { that[k](params[k]); }			
-			}
-		},
-		init: function(params) {
-			if (params === false) {return false}
-			this.init_vars(params);
-		},
-		add_defaults_to_params: function(params) {
+		this.add_defaults_to_params(params);
 
-			var defaults = this.constructor.default_params;
-			for (var v in defaults) {
-				if (params[v] === undefined && defaults[v] !== undefined) { 
-					params[v] = defaults[v];
-				}
+		var that = this;
+		for (var k in params || {}) {
+			if (that[k] !== undefined) { that[k](params[k]); }			
+		}
+	},
+	add_defaults_to_params: function(params) {
+
+		var defaults = this.constructor.default_params;
+		for (var v in defaults) {
+			if (params[v] === undefined && defaults[v] !== undefined) { 
+				params[v] = defaults[v];
 			}
 		}
 	},

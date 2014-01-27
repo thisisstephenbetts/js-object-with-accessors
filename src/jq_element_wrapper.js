@@ -1,16 +1,14 @@
 ObjectWithAccessors.createSubclass('JQElementWrapper',{
 	accessors:['$'],
-	instance_methods: {
-		init: function(args) {
+	init: function(args) {
 
-			if (this._super(args) === false) { return false }
-			this.$($(this.original_html()));
+		if (this._super(args) === false) { return false }
+		this.$($(this.original_html()));
 
-			this.$().data('o',this)
-		},
-		original_html: function() {
-			return '<div />';
-		}
+		this.$().data('o',this)
+	},
+	original_html: function() {
+		return '<div />';
 	}
 });
 
