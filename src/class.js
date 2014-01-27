@@ -45,7 +45,6 @@ Class.get_instance_methods = function(props) {
 	var instance_methods = {};
 	for (var key in props || {}) {
 		// Any functions in props should be instance methods
-		console.log(key, typeof props[key])
 		if (typeof props[key] === "function") {
 			instance_methods[key] = props[key];
 		}

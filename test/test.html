@@ -97,7 +97,21 @@
 	
 	test('Testing class_init is called', function() {
 		equal(dummy_instance.dummy_method(),'Dummy#dummy_method');
+	});
+	
+	BaseToSubclass.createSubclass('ClassWithOverridenClassMethod', {
+		overridden: function() { throw("Shouldn't have been called"); },
+		class_methods: {
+			get_instance_methods: function() { return {} }
+		}
+	});
+	
+	var overridden_class_method_instance = new ClassWithOverridenClassMethod();
+	
+	test('Testing that new class methods override inherited methods', function() {
+		equal(overridden_class_method_instance.overridden, undefined);
 	})
+	
 	
 	var obj_w_acc = new ObjectWithAccessors();
 	test('ObjectWithAccessors',function() {
@@ -118,6 +132,13 @@
 		equal(sc_i2.first(),'sc_i2: 1st');
 	});
 	
+	test("ObjectWithAccessors error raised if parameters are unexpected.", function() {
+		throws(
+			function() { var invalid = new Subclass({fourth: 'disallowed'}) },
+			ObjectWithAccessorsParameterError
+		)
+	});
+
 	
 	// Adding another method
 	Subclass.prototype.another = function() {
@@ -226,6 +247,12 @@
 		default_params: {meth4: 'meth4 default'},
 		class_methods: {
 		}
+	});
+	
+	test("default_params don't clash", function() {
+		notEqual(ClassWithDefaults.default_params, ClassWithDefaultsSubclass.default_params);
+		equal(ClassWithDefaults.default_params.meth2, 'meth2 default');
+		equal(ClassWithDefaults.default_params.meth4, undefined);
 	});
 	
 	var c = new ClassWithDefaults();
