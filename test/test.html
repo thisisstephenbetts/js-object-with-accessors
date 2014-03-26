@@ -330,6 +330,26 @@
 	});
 
 	
+	ObjectWithAccessors.createSubclass('ClassWithObjectProperty',{
+		accessors: ['data_object', 'data_array'],
+		default_params: {data_object: {}, data_array: []},
+	});
+
+	var first = new ClassWithObjectProperty();
+	var test_object = {prm1:'val1'}
+	first.data_object().prm1 = 'val1';
+	first.data_array().push('val2');
+
+	var second = new ClassWithObjectProperty();
+	
+	test('Testing clashing properties', function() {
+		equal(JSON.stringify(first.data_object()), JSON.stringify(test_object));
+		equal(JSON.stringify(first.data_array()), JSON.stringify(['val2']));
+		equal(JSON.stringify(second.data_object()), '{}');
+		equal(JSON.stringify(second.data_array()), '[]');
+	});
+	
+	
 	
 
 	</script>

@@ -24,7 +24,11 @@ Class.createSubclass('ObjectWithAccessors', {
 		var defaults = this.constructor.default_params;
 		for (var v in defaults) {
 			if (params[v] === undefined && defaults[v] !== undefined) { 
-				params[v] = defaults[v];
+				if (typeof defaults[v] === "object") {
+					params[v] = JSON.parse(JSON.stringify(defaults[v]));
+				} else {
+					params[v] = defaults[v];
+				}
 			}
 		}
 	},
