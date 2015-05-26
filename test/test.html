@@ -5,7 +5,7 @@
 	<script src='qunit-1.13.0.js'></script>
 	<script src='../src/class.js'></script>
   <script src='../src/object_with_accessors.js'></script>
-	<script src='jquery-1.7.1.min.js'></script>
+	<script src='jquery-1.11.3.min.js'></script>
 	<script src='../src/jq_element_wrapper.js'></script>
 	<!-- <script src='http://influxenterprises.pathinonnu.local/j/lib/object_with_accessors.js'></script>
 		<script src='http://influxenterprises.pathinonnu.local/j/vdr/jquery-1.7.1.min.js'></script> -->
@@ -96,7 +96,7 @@
 				}
 			}
 		}));
-	
+
 		test('Testing class_init is called', function() {
 			equal(dummy_instance.dummy_method(),'Dummy#dummy_method');
 		});
@@ -313,6 +313,11 @@
 		var jq_bare = new (JQElementWrapper.createSubclass('BasicElement', {
 			original_html: function() {return '<a></a>'}
 		}));
+	
+		test('Testing limbo', function() {
+			var limbo = jq_bare.$().closest('#jqew-limbo');
+			equal(limbo.length, 1);
+		});	
 	
 		var jq_init = new (BasicElement.createSubclass('BasicWithInit', {
 			init: function() {
