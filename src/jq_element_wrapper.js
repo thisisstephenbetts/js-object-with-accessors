@@ -26,7 +26,7 @@ ObjectWithAccessors.createSubclass('JQElementWrapper',{
 		var limbo = $('#jqew-limbo')
     return (limbo.length) ?
         limbo :
-        $('body').append('<div id="jqew-limbo" style="display:none" />')
+        $('<div id="jqew-limbo" style="display:none" />').appendTo('body');
 	},
 	set_jqew_id: function() {
     GLOBAL_ID+=1;
